@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Extracktir — PDF to Excel</title>
+<title>Extracktir &mdash; PDF to Excel</title>
 <style>
   :root {
     --bg: #0b1020;
@@ -30,22 +30,11 @@
     text-align: center;
     border-bottom: 1px solid var(--border);
   }
-  header h1 {
-    margin: 0;
-    font-size: 28px;
-    letter-spacing: -0.02em;
-  }
+  header h1 { margin: 0; font-size: 28px; letter-spacing: -0.02em; }
   header h1 .em { color: var(--accent); }
-  header p {
-    margin: 6px 0 0;
-    color: var(--muted);
-    font-size: 14px;
-  }
-  main {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 24px;
-  }
+  header p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px; }
+
   .drop {
     border: 2px dashed var(--border);
     border-radius: 14px;
@@ -60,21 +49,67 @@
     background: var(--panel-2);
   }
   .drop input { display: none; }
-  .drop .big {
-    font-size: 18px;
-    margin-bottom: 6px;
+  .drop .big { font-size: 18px; margin-bottom: 6px; }
+  .drop .small { color: var(--muted); font-size: 13px; }
+
+  .options {
+    margin-top: 16px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
   }
-  .drop .small {
+  .options summary {
+    cursor: pointer;
+    padding: 12px 16px;
+    font-size: 14px;
     color: var(--muted);
+    list-style: none;
+  }
+  .options summary::-webkit-details-marker { display: none; }
+  .options summary::before {
+    content: "▸";
+    display: inline-block;
+    margin-right: 8px;
+    color: var(--accent-2);
+    transition: transform .15s;
+  }
+  .options[open] summary::before { transform: rotate(90deg); }
+  .options .options-body {
+    padding: 0 16px 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .field input[type="text"], .field input[type="file"], .field textarea {
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font: inherit;
     font-size: 13px;
   }
-  .actions {
-    margin-top: 16px;
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
+  .field textarea { min-height: 110px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .field .hint { font-size: 12px; color: var(--muted); }
+  .field .check { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text); }
+  .ocr-warn { color: var(--warn); font-size: 12px; }
+
+  .file-list { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    display: inline-flex;
     align-items: center;
+    gap: 8px;
   }
+  .chip button { background: transparent; color: var(--muted); padding: 0; font-size: 16px; line-height: 1; border: 0; cursor: pointer; }
+
+  .actions { margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
   button, .btn {
     background: var(--accent);
     color: #052e1a;
@@ -94,58 +129,26 @@
     color: var(--text);
     border: 1px solid var(--border);
   }
-  button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-  .file-list {
-    margin-top: 16px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .chip {
-    background: var(--panel-2);
-    border: 1px solid var(--border);
-    padding: 6px 10px;
-    border-radius: 999px;
-    font-size: 12px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .chip button {
-    background: transparent;
-    color: var(--muted);
-    padding: 0;
-    font-size: 16px;
-    line-height: 1;
-  }
-  .status {
-    margin-top: 16px;
-    color: var(--muted);
-    font-size: 13px;
-    min-height: 20px;
-  }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .status { margin-top: 16px; color: var(--muted); font-size: 13px; min-height: 20px; }
   .status.error { color: var(--danger); }
+
   .results { margin-top: 28px; }
-  .summary-table, .kv-table, .data-table {
+  .summary-table, .data-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 13px;
     background: var(--panel);
-    border-radius: 8px;
-    overflow: hidden;
   }
   .summary-table th, .summary-table td,
-  .kv-table th, .kv-table td,
   .data-table th, .data-table td {
     padding: 8px 12px;
     text-align: left;
     border-bottom: 1px solid var(--border);
     vertical-align: top;
   }
-  .summary-table th, .kv-table th, .data-table th {
+  .summary-table th, .data-table th {
     background: var(--panel-2);
     font-weight: 600;
     font-size: 12px;
@@ -164,17 +167,22 @@
     padding: 14px 18px;
     background: var(--panel-2);
     border-bottom: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 12px;
   }
   .file-head h3 { margin: 0; font-size: 16px; }
-  .file-head .meta {
+  .file-head .meta { color: var(--muted); font-size: 12px; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 11px;
     color: var(--muted);
-    font-size: 12px;
+    margin-left: 6px;
   }
+  .badge.ok { color: var(--accent); border-color: var(--accent); }
   .file-body { padding: 16px 18px; }
   .section-title {
     font-size: 12px;
@@ -196,11 +204,7 @@
     border-radius: 8px;
     padding: 8px 12px;
   }
-  details.text-block summary {
-    cursor: pointer;
-    color: var(--muted);
-    font-size: 13px;
-  }
+  details.text-block summary { cursor: pointer; color: var(--muted); font-size: 13px; }
   details.text-block pre {
     white-space: pre-wrap;
     font-size: 12px;
@@ -209,11 +213,7 @@
     max-height: 320px;
     overflow: auto;
   }
-  .empty {
-    color: var(--muted);
-    font-size: 13px;
-    font-style: italic;
-  }
+  .empty { color: var(--muted); font-size: 13px; font-style: italic; }
   footer {
     margin-top: 40px;
     padding: 20px;
@@ -248,6 +248,42 @@
       <div class="small">Multiple files supported. Digital PDFs work best (use OCR for scans).</div>
     </label>
 
+    <details class="options" id="options">
+      <summary>Advanced options &mdash; templates &amp; OCR</summary>
+      <div class="options-body">
+        <div class="field">
+          <label for="template-file">Template file (optional)</label>
+          <input type="file" id="template-file" accept=".yaml,.yml,.json,application/json,text/yaml" />
+          <div class="hint">YAML or JSON. Defines deterministic fields to pull from each PDF.</div>
+        </div>
+
+        <div class="field" style="grid-column: 1 / -1;">
+          <label for="template-text">...or paste a template inline</label>
+          <textarea id="template-text" placeholder='name: my-invoice
+fields:
+  - name: invoice_number
+    type: regex
+    pattern: "Invoice Number:\s*(?P&lt;value&gt;\S+)"
+  - name: total
+    type: regex
+    pattern: "Total:\s*\$?(?P&lt;value&gt;[\d,.]+)"
+    cast: number'></textarea>
+        </div>
+
+        <div class="field">
+          <label>OCR (for scanned PDFs)</label>
+          <label class="check"><input type="checkbox" id="ocr" /> Run ocrmypdf when no text is extractable</label>
+          <div class="hint" id="ocr-status">Checking server capabilities&hellip;</div>
+        </div>
+
+        <div class="field">
+          <label for="ocr-language">OCR language</label>
+          <input type="text" id="ocr-language" value="eng" placeholder="eng or eng+deu" />
+          <div class="hint">Tesseract language code. Combine with <code>+</code>.</div>
+        </div>
+      </div>
+    </details>
+
     <div class="file-list" id="file-list"></div>
 
     <div class="actions">
@@ -277,18 +313,39 @@
   const statusEl = document.getElementById('status');
   const results = document.getElementById('results');
 
+  const templateFile = document.getElementById('template-file');
+  const templateText = document.getElementById('template-text');
+  const ocrCheckbox = document.getElementById('ocr');
+  const ocrLanguage = document.getElementById('ocr-language');
+  const ocrStatus = document.getElementById('ocr-status');
+
   let files = [];
+  let ocrAvailable = false;
 
   function setStatus(msg, isError = false) {
     statusEl.textContent = msg || '';
     statusEl.classList.toggle('error', !!isError);
   }
-
   function setBusy(msg) {
     statusEl.innerHTML = `<span class="spinner"></span> &nbsp;${msg}`;
     statusEl.classList.remove('error');
   }
 
+  // -- health probe ---------------------------------------------------------
+  fetch('/api/health').then((r) => r.json()).then((data) => {
+    ocrAvailable = !!data.ocr_available;
+    if (ocrAvailable) {
+      ocrStatus.textContent = 'ocrmypdf is installed on the server.';
+      ocrStatus.style.color = '';
+    } else {
+      ocrStatus.innerHTML = '<span class="ocr-warn">ocrmypdf is not installed on this server. OCR will be rejected.</span>';
+      ocrCheckbox.disabled = true;
+    }
+  }).catch(() => {
+    ocrStatus.textContent = '';
+  });
+
+  // -- file list ------------------------------------------------------------
   function renderFiles() {
     fileList.innerHTML = '';
     files.forEach((f, i) => {
@@ -326,7 +383,6 @@
     renderFiles();
   }
 
-  // -- drag/drop wiring -----------------------------------------------------
   drop.addEventListener('click', () => fileInput.click());
   fileInput.addEventListener('change', (e) => addFiles(e.target.files));
   ['dragenter', 'dragover'].forEach((ev) => {
@@ -369,43 +425,47 @@
   function renderResults(data) {
     results.innerHTML = '';
 
-    // Summary
     const summary = data.summary || [];
     if (summary.length) {
-      const summaryHtml = `
+      const cols = ['source', 'pages', 'template_field_count', 'key_value_count', 'table_count', 'ocr_used', 'template'];
+      const labels = ['Source', 'Pages', 'Template fields', 'Heuristic fields', 'Tables', 'OCR', 'Template'];
+      const html = `
         <h2 style="font-size:18px;margin:0 0 10px;">Summary</h2>
         <div class="table-wrap">
           <table class="summary-table">
-            <thead><tr><th>Source</th><th>Pages</th><th>Fields</th><th>Tables</th></tr></thead>
+            <thead><tr>${labels.map((l) => `<th>${l}</th>`).join('')}</tr></thead>
             <tbody>
-              ${summary.map((s) => `
-                <tr>
-                  <td>${escapeHtml(s.source)}</td>
-                  <td>${s.pages}</td>
-                  <td>${s.key_value_count}</td>
-                  <td>${s.table_count}</td>
-                </tr>`).join('')}
+              ${summary.map((s) => `<tr>${cols.map((c) => `<td>${escapeHtml(c === 'ocr_used' ? (s[c] ? 'yes' : 'no') : s[c] ?? '')}</td>`).join('')}</tr>`).join('')}
             </tbody>
           </table>
         </div>`;
-      results.insertAdjacentHTML('beforeend', summaryHtml);
+      results.insertAdjacentHTML('beforeend', html);
     }
 
-    // Per-file blocks
     (data.results || []).forEach((r) => {
       const block = document.createElement('div');
       block.className = 'file-block';
 
+      const tplBadge = r.template_name ? `<span class="badge ok">template: ${escapeHtml(r.template_name)}</span>` : '';
+      const ocrBadge = r.ocr_used ? '<span class="badge ok">OCR</span>' : '';
+
       const head = `
         <div class="file-head">
-          <h3>${escapeHtml(r.source)}</h3>
-          <span class="meta">${r.pages} page(s) &middot; ${r.key_values.length} field(s) &middot; ${r.tables.length} table(s)</span>
+          <h3>${escapeHtml(r.source)}${tplBadge}${ocrBadge}</h3>
+          <span class="meta">${r.pages} page(s) &middot; ${r.template_fields.length} template &middot; ${r.key_values.length} heuristic &middot; ${r.tables.length} table(s)</span>
         </div>`;
 
       let body = '<div class="file-body">';
 
-      // Key-values
-      body += '<div class="section-title">Key-Values</div>';
+      if (r.template_fields && r.template_fields.length) {
+        body += '<div class="section-title">Template fields</div>';
+        body += renderTable(
+          ['Field', 'Value', 'Page'],
+          r.template_fields.map((f) => [f.Field ?? '', f.Value ?? '', f.Page ?? ''])
+        );
+      }
+
+      body += '<div class="section-title">Heuristic fields</div>';
       if (r.key_values.length) {
         body += renderTable(
           ['Page', 'Field', 'Value'],
@@ -415,7 +475,6 @@
         body += '<div class="empty">No labeled fields detected.</div>';
       }
 
-      // Tables
       if (r.tables.length) {
         body += '<div class="section-title">Tables</div>';
         r.tables.forEach((t) => {
@@ -424,7 +483,6 @@
         });
       }
 
-      // Raw text
       body += '<details class="text-block"><summary>Show raw text</summary>';
       r.page_texts.forEach((txt, i) => {
         body += `<div class="section-title" style="margin-top:10px;">Page ${i + 1}</div>`;
@@ -438,10 +496,19 @@
     });
   }
 
-  // -- API calls ------------------------------------------------------------
-  function buildFormData() {
+  // -- request building -----------------------------------------------------
+  async function buildFormData() {
     const fd = new FormData();
     files.forEach((f) => fd.append('files', f, f.name));
+
+    if (templateFile.files && templateFile.files[0]) {
+      fd.append('template_file', templateFile.files[0], templateFile.files[0].name);
+    } else if (templateText.value && templateText.value.trim()) {
+      fd.append('template', templateText.value);
+    }
+
+    fd.append('ocr', ocrCheckbox.checked ? 'true' : 'false');
+    fd.append('ocr_language', ocrLanguage.value || 'eng');
     return fd;
   }
 
@@ -450,7 +517,8 @@
     setBusy('Extracting...');
     extractBtn.disabled = true;
     try {
-      const res = await fetch('/api/extract', { method: 'POST', body: buildFormData() });
+      const fd = await buildFormData();
+      const res = await fetch('/api/extract', { method: 'POST', body: fd });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ detail: res.statusText }));
         throw new Error(err.detail || 'Extraction failed.');
@@ -470,7 +538,8 @@
     setBusy('Building Excel...');
     downloadBtn.disabled = true;
     try {
-      const res = await fetch('/api/extract.xlsx', { method: 'POST', body: buildFormData() });
+      const fd = await buildFormData();
+      const res = await fetch('/api/extract.xlsx', { method: 'POST', body: fd });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ detail: res.statusText }));
         throw new Error(err.detail || 'Download failed.');

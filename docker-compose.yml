@@ -1,0 +1,18 @@
+services:
+  extracktir:
+    build:
+      context: .
+      args:
+        # Add more languages as needed, e.g. "eng deu fra spa".
+        TESSDATA_LANGS: "eng"
+    image: extracktir:latest
+    container_name: extracktir
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: "8000"
+    restart: unless-stopped
+    # Mount a host directory if you want to keep batch outputs out of the
+    # container's writable layer. Optional.
+    volumes:
+      - ./output:/app/output
