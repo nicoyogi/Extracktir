@@ -1,0 +1,43 @@
+name: acme-invoice
+description: ACME Corp invoices, 2026 layout
+
+match:
+  - "ACME Corp"
+  - "Invoice"
+
+fields:
+  - name: invoice_number
+    type: regex
+    pattern: 'Invoice Number:\s*(?P<value>\S+)'
+
+  - name: issue_date
+    type: after_label
+    label: "Issue Date"
+    cast: date
+
+  - name: due_date
+    type: after_label
+    label: "Due Date"
+    cast: date
+
+  - name: bill_to
+    type: after_label
+    label: "Bill To"
+
+  - name: po_number
+    type: regex
+    pattern: 'PO Number:\s*(?P<value>\S+)'
+
+  - name: currency
+    type: after_label
+    label: "Currency"
+
+  - name: total_amount
+    type: regex
+    pattern: 'Total Amount:\s*\$?(?P<value>[\d,.]+)'
+    cast: number
+
+  - name: balance_due
+    type: regex
+    pattern: 'Balance Due:\s*\$?(?P<value>[\d,.]+)'
+    cast: number
