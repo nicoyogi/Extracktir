@@ -1,0 +1,36 @@
+# Fly.io config. Deploy with:
+#   fly launch --copy-config --no-deploy   # to claim a unique app name
+#   fly deploy
+#
+# Free tier is no longer offered for new accounts. Expect ~$2-5/mo for a
+# single shared-CPU 512 MB machine that stops when idle.
+
+app = "extracktir"
+primary_region = "iad"
+kill_signal = "SIGINT"
+kill_timeout = "30s"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8000"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    timeout = "5s"
+    path = "/api/health"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512

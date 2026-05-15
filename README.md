@@ -49,6 +49,20 @@ For OCR support, also install `ocrmypdf` ([install
 guide](https://ocrmypdf.readthedocs.io/en/latest/installation.html)). The
 app will auto-detect it and gray out the OCR toggle if it's missing.
 
+### Deploy online
+
+The app is stateless, listens on `$PORT`, and has a `/api/health` probe,
+so it deploys to any container host. See [DEPLOY.md](./DEPLOY.md) for
+copy-paste recipes:
+
+| Target              | Free? | One command / click                              |
+| ------------------- | ----- | ------------------------------------------------ |
+| Hugging Face Spaces | Yes   | Push the repo, add a YAML header to README       |
+| Render              | Yes   | [One-click deploy](https://render.com/deploy?repo=https://github.com/nicoyogi/Extracktir) (uses `render.yaml`) |
+| Fly.io              | ~$3   | `fly launch --copy-config --no-deploy && fly deploy` (uses `fly.toml`) |
+| Google Cloud Run    | Yes   | `gcloud run deploy extracktir --source . --port 8000`        |
+| Any VPS             | $5+   | `docker compose up -d --build`                   |
+
 ## Use it
 
 ### Web UI

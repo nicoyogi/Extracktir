@@ -1,0 +1,23 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+#
+# Deploy with one click via:
+#   https://render.com/deploy?repo=https://github.com/nicoyogi/Extracktir
+#
+# The free "starter" plan has 512 MB RAM, which is tight for OCR. Bump to
+# "standard" (2 GB) if you'll OCR multi-page scans.
+
+services:
+  - type: web
+    name: extracktir
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: starter
+    region: oregon
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: "10000"
+      - key: TESSDATA_LANGS
+        value: "eng"
