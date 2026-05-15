@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Extracktir — PDF to Excel</title>
+<style>
+  :root {
+    --bg: #0b1020;
+    --panel: #131a32;
+    --panel-2: #1a2342;
+    --border: #2a3458;
+    --text: #e8ecf8;
+    --muted: #9aa3c0;
+    --accent: #6ee7b7;
+    --accent-2: #60a5fa;
+    --danger: #f87171;
+    --warn: #fbbf24;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  header {
+    padding: 32px 24px 16px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 {
+    margin: 0;
+    font-size: 28px;
+    letter-spacing: -0.02em;
+  }
+  header h1 .em { color: var(--accent); }
+  header p {
+    margin: 6px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+  .drop {
+    border: 2px dashed var(--border);
+    border-radius: 14px;
+    padding: 40px 24px;
+    text-align: center;
+    background: var(--panel);
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .drop:hover, .drop.drag {
+    border-color: var(--accent);
+    background: var(--panel-2);
+  }
+  .drop input { display: none; }
+  .drop .big {
+    font-size: 18px;
+    margin-bottom: 6px;
+  }
+  .drop .small {
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .actions {
+    margin-top: 16px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  button, .btn {
+    background: var(--accent);
+    color: #052e1a;
+    border: 0;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  button.secondary, .btn.secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .file-list {
+    margin-top: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .chip {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .chip button {
+    background: transparent;
+    color: var(--muted);
+    padding: 0;
+    font-size: 16px;
+    line-height: 1;
+  }
+  .status {
+    margin-top: 16px;
+    color: var(--muted);
+    font-size: 13px;
+    min-height: 20px;
+  }
+  .status.error { color: var(--danger); }
+  .results { margin-top: 28px; }
+  .summary-table, .kv-table, .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: var(--panel);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .summary-table th, .summary-table td,
+  .kv-table th, .kv-table td,
+  .data-table th, .data-table td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .summary-table th, .kv-table th, .data-table th {
+    background: var(--panel-2);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+  }
+  .file-block {
+    margin-top: 24px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .file-head {
+    padding: 14px 18px;
+    background: var(--panel-2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .file-head h3 { margin: 0; font-size: 16px; }
+  .file-head .meta {
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .file-body { padding: 16px 18px; }
+  .section-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 12px 0 6px;
+    letter-spacing: 0.04em;
+  }
+  .table-wrap {
+    overflow-x: auto;
+    margin-bottom: 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  details.text-block {
+    margin-top: 10px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+  }
+  details.text-block summary {
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  details.text-block pre {
+    white-space: pre-wrap;
+    font-size: 12px;
+    color: var(--text);
+    margin: 8px 0 0;
+    max-height: 320px;
+    overflow: auto;
+  }
+  .empty {
+    color: var(--muted);
+    font-size: 13px;
+    font-style: italic;
+  }
+  footer {
+    margin-top: 40px;
+    padding: 20px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--accent-2); text-decoration: none; }
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    display: inline-block;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Extra<span class="em">cktir</span></h1>
+    <p>Drop in PDFs &mdash; get a structured Excel workbook back.</p>
+  </header>
+
+  <main>
+    <label class="drop" id="drop">
+      <input id="file-input" type="file" accept="application/pdf,.pdf" multiple />
+      <div class="big">Drop PDFs here, or click to choose</div>
+      <div class="small">Multiple files supported. Digital PDFs work best (use OCR for scans).</div>
+    </label>
+
+    <div class="file-list" id="file-list"></div>
+
+    <div class="actions">
+      <button id="extract-btn" disabled>Extract &amp; preview</button>
+      <button id="download-btn" class="secondary" disabled>Download Excel</button>
+      <button id="clear-btn" class="secondary" disabled>Clear</button>
+    </div>
+
+    <div class="status" id="status"></div>
+
+    <section class="results" id="results"></section>
+  </main>
+
+  <footer>
+    Extracktir &middot;
+    <a href="/docs" target="_blank" rel="noopener">API docs</a>
+  </footer>
+
+<script>
+(() => {
+  const drop = document.getElementById('drop');
+  const fileInput = document.getElementById('file-input');
+  const fileList = document.getElementById('file-list');
+  const extractBtn = document.getElementById('extract-btn');
+  const downloadBtn = document.getElementById('download-btn');
+  const clearBtn = document.getElementById('clear-btn');
+  const statusEl = document.getElementById('status');
+  const results = document.getElementById('results');
+
+  let files = [];
+
+  function setStatus(msg, isError = false) {
+    statusEl.textContent = msg || '';
+    statusEl.classList.toggle('error', !!isError);
+  }
+
+  function setBusy(msg) {
+    statusEl.innerHTML = `<span class="spinner"></span> &nbsp;${msg}`;
+    statusEl.classList.remove('error');
+  }
+
+  function renderFiles() {
+    fileList.innerHTML = '';
+    files.forEach((f, i) => {
+      const chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.innerHTML = `<span>${f.name}</span><button title="Remove" aria-label="Remove">&times;</button>`;
+      chip.querySelector('button').addEventListener('click', (e) => {
+        e.stopPropagation();
+        files.splice(i, 1);
+        renderFiles();
+        syncButtons();
+      });
+      fileList.appendChild(chip);
+    });
+    syncButtons();
+  }
+
+  function syncButtons() {
+    const hasFiles = files.length > 0;
+    extractBtn.disabled = !hasFiles;
+    downloadBtn.disabled = !hasFiles;
+    clearBtn.disabled = !hasFiles;
+  }
+
+  function addFiles(list) {
+    for (const f of list) {
+      if (!f.name.toLowerCase().endsWith('.pdf')) {
+        setStatus(`Skipped ${f.name}: only .pdf files are supported.`, true);
+        continue;
+      }
+      if (!files.some((x) => x.name === f.name && x.size === f.size)) {
+        files.push(f);
+      }
+    }
+    renderFiles();
+  }
+
+  // -- drag/drop wiring -----------------------------------------------------
+  drop.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', (e) => addFiles(e.target.files));
+  ['dragenter', 'dragover'].forEach((ev) => {
+    drop.addEventListener(ev, (e) => {
+      e.preventDefault();
+      drop.classList.add('drag');
+    });
+  });
+  ['dragleave', 'drop'].forEach((ev) => {
+    drop.addEventListener(ev, (e) => {
+      e.preventDefault();
+      drop.classList.remove('drag');
+    });
+  });
+  drop.addEventListener('drop', (e) => addFiles(e.dataTransfer.files));
+
+  clearBtn.addEventListener('click', () => {
+    files = [];
+    fileInput.value = '';
+    results.innerHTML = '';
+    setStatus('');
+    renderFiles();
+  });
+
+  // -- rendering ------------------------------------------------------------
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  }
+
+  function renderTable(headers, rows) {
+    const head = headers.map((h) => `<th>${escapeHtml(h)}</th>`).join('');
+    const body = rows
+      .map((r) => '<tr>' + r.map((c) => `<td>${escapeHtml(c)}</td>`).join('') + '</tr>')
+      .join('');
+    return `<div class="table-wrap"><table class="data-table"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+  }
+
+  function renderResults(data) {
+    results.innerHTML = '';
+
+    // Summary
+    const summary = data.summary || [];
+    if (summary.length) {
+      const summaryHtml = `
+        <h2 style="font-size:18px;margin:0 0 10px;">Summary</h2>
+        <div class="table-wrap">
+          <table class="summary-table">
+            <thead><tr><th>Source</th><th>Pages</th><th>Fields</th><th>Tables</th></tr></thead>
+            <tbody>
+              ${summary.map((s) => `
+                <tr>
+                  <td>${escapeHtml(s.source)}</td>
+                  <td>${s.pages}</td>
+                  <td>${s.key_value_count}</td>
+                  <td>${s.table_count}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>`;
+      results.insertAdjacentHTML('beforeend', summaryHtml);
+    }
+
+    // Per-file blocks
+    (data.results || []).forEach((r) => {
+      const block = document.createElement('div');
+      block.className = 'file-block';
+
+      const head = `
+        <div class="file-head">
+          <h3>${escapeHtml(r.source)}</h3>
+          <span class="meta">${r.pages} page(s) &middot; ${r.key_values.length} field(s) &middot; ${r.tables.length} table(s)</span>
+        </div>`;
+
+      let body = '<div class="file-body">';
+
+      // Key-values
+      body += '<div class="section-title">Key-Values</div>';
+      if (r.key_values.length) {
+        body += renderTable(
+          ['Page', 'Field', 'Value'],
+          r.key_values.map((kv) => [kv.Page ?? '', kv.Field ?? '', kv.Value ?? ''])
+        );
+      } else {
+        body += '<div class="empty">No labeled fields detected.</div>';
+      }
+
+      // Tables
+      if (r.tables.length) {
+        body += '<div class="section-title">Tables</div>';
+        r.tables.forEach((t) => {
+          body += `<div class="meta" style="font-size:12px;color:var(--muted);margin-bottom:4px;">Page ${t.page}, table ${t.index}</div>`;
+          body += renderTable(t.columns, t.rows);
+        });
+      }
+
+      // Raw text
+      body += '<details class="text-block"><summary>Show raw text</summary>';
+      r.page_texts.forEach((txt, i) => {
+        body += `<div class="section-title" style="margin-top:10px;">Page ${i + 1}</div>`;
+        body += `<pre>${escapeHtml(txt || '(empty)')}</pre>`;
+      });
+      body += '</details>';
+
+      body += '</div>';
+      block.innerHTML = head + body;
+      results.appendChild(block);
+    });
+  }
+
+  // -- API calls ------------------------------------------------------------
+  function buildFormData() {
+    const fd = new FormData();
+    files.forEach((f) => fd.append('files', f, f.name));
+    return fd;
+  }
+
+  extractBtn.addEventListener('click', async () => {
+    if (!files.length) return;
+    setBusy('Extracting...');
+    extractBtn.disabled = true;
+    try {
+      const res = await fetch('/api/extract', { method: 'POST', body: buildFormData() });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: res.statusText }));
+        throw new Error(err.detail || 'Extraction failed.');
+      }
+      const data = await res.json();
+      renderResults(data);
+      setStatus(`Extracted ${data.results.length} file(s).`);
+    } catch (e) {
+      setStatus(e.message, true);
+    } finally {
+      extractBtn.disabled = !files.length;
+    }
+  });
+
+  downloadBtn.addEventListener('click', async () => {
+    if (!files.length) return;
+    setBusy('Building Excel...');
+    downloadBtn.disabled = true;
+    try {
+      const res = await fetch('/api/extract.xlsx', { method: 'POST', body: buildFormData() });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: res.statusText }));
+        throw new Error(err.detail || 'Download failed.');
+      }
+      const blob = await res.blob();
+      const cd = res.headers.get('Content-Disposition') || '';
+      const m = cd.match(/filename="?([^"]+)"?/);
+      const name = m ? m[1] : 'extracktir_output.xlsx';
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setStatus(`Downloaded ${name}.`);
+    } catch (e) {
+      setStatus(e.message, true);
+    } finally {
+      downloadBtn.disabled = !files.length;
+    }
+  });
+})();
+</script>
+</body>
+</html>
