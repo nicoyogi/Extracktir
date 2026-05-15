@@ -27,14 +27,36 @@ Requires Python 3.10+.
 
 ## Use it
 
-### Web UI (recommended)
+### Web app (FastAPI)
+
+A self-contained web app with drag-and-drop, JSON preview, and Excel
+download:
+
+```bash
+uvicorn extracktir.web:app --reload --port 8000
+```
+
+Then open http://localhost:8000.
+
+| Route                  | What it does                                       |
+| ---------------------- | -------------------------------------------------- |
+| `GET  /`               | Single-page UI                                     |
+| `POST /api/extract`    | Multipart upload, JSON preview of fields & tables  |
+| `POST /api/extract.xlsx` | Multipart upload, returns the `.xlsx` workbook   |
+| `GET  /api/health`     | Liveness probe                                     |
+| `GET  /docs`           | Auto-generated OpenAPI docs                        |
+
+Example via `curl`:
+
+```bash
+curl -F "files=@invoice.pdf" -o out.xlsx http://localhost:8000/api/extract.xlsx
+```
+
+### Streamlit UI (alternative)
 
 ```bash
 streamlit run app.py
 ```
-
-Then drop one or more PDFs onto the page, preview what was found, and
-download the Excel file.
 
 ### Command line
 
@@ -79,11 +101,14 @@ This works well for digital PDFs. Scanned/image-only PDFs need OCR first
 
 ```
 Extracktir/
-├── app.py                 # Streamlit UI
+├── app.py                      # Streamlit UI
 ├── requirements.txt
 └── extracktir/
-    ├── __init__.py        # public API: extract_pdf, extract_to_excel
-    ├── __main__.py        # python -m extracktir
-    ├── cli.py             # batch CLI
-    └── extractor.py       # core extraction logic
+    ├── __init__.py             # public API: extract_pdf, extract_to_excel
+    ├── __main__.py             # python -m extracktir
+    ├── cli.py                  # batch CLI
+    ├── extractor.py            # core extraction logic
+    ├── web.py                  # FastAPI app (uvicorn extracktir.web:app)
+    └── static/
+        └── index.html          # web UI
 ```
